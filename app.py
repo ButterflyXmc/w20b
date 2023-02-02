@@ -1,24 +1,22 @@
-import mariadb
-import dbcreds
-# import db
-# connecting to the db
-# conn = db.connect_to_db()
-conn = mariadb.connect(
-                        user = dbcreds.user,
-                        password = dbcreds.password,
-                        host = dbcreds.host,
-                        port = dbcreds.port,
-                        database = dbcreds.database,
-                        )
-cursor = conn.cursor()
 
+# !Importing 3 functions from db.py
+from db import connect_to_db, close_conn, close_cursor
+
+#!"""
+# LOGIN() :-
+# - User's ID will print when they're logged in.
+# - Choosing ID to get printed instead of the name so I can use the ID later.
+# - Will save the result(ID) into a global variable for later use.
+# - If the login is successful, print the option, else close the application.
+#!"""
 # & LOGIN
 def login():
+    cursor = connect_to_db()
     alias = input("Enter yout Alias : ")
     password = input("Enter your Password : ")
     cursor.execute("SELECT id FROM hackers WHERE alias = ? AND password = ?", [alias, password])
     result = cursor.fetchone()
-    # Setting ID as a global variable so I can use it outside of this function as well
+#*  Setting the result as a global variable so I can use it outside of this function as well
     global user_id
     user_id = result[0]
     if result != None:
@@ -26,37 +24,61 @@ def login():
         user_options()
     else:
         print("__!Incorrect alias or password!__")
-        cursor.close()
-        conn.close()
+        close_conn()
+        close_cursor()
 
-
+#!"""
+# create_exploit() :-
+# - Lets user input their ID and any content
+# - Calls a stored procedure that takes in user's input and creates a new post
+#!"""
 # & 1.ENTER A NEW POST
 def create_exploit():
+    cursor = connect_to_db()
     content = input("Enter content : ")
     user_id = input("Enter YOUR ID : ")
     cursor.execute("CALL new_post(?,?)",[content, user_id])
-    conn.commit()
-    print("Post created!")
+#^  INSERT INTO exploits (content,user_id) VALUES(content_input,user_id_input)
+    print("__!POST CREATED!__")
 
+
+#!"""
+# my_exploits() :-
+# - Putting the global variable in a (variable) to get the logged in user's ID
+# - Calling a procedure that takes in the (user's ID) to show the logged in user ONLY their posts 
+# - Using a for loop to display the results nicely
+#!"""
 # & 2.ONLY SHOW MY POSTS
 def my_exploits():
+    cursor = connect_to_db()
     user_input = user_id
     cursor.execute("CALL my_exploits(?)", [user_input])
+#^  SELECT content FROM exploits WHERE user_id = user_id_input = TRUE;
     results = cursor.fetchall()
     for i in results:
         print(i[0])
 
-# & 3.SHOW EVERYONES POSTS EXCEPT MINE
+#!"""
+# all_exploits():-
+# - Putting the global variable in a (variable) to get the logged in user's ID
+# - Calling a procedure that takes in the (user's ID) to show the users everyone's post except theirs
+# - Using a for loop to display the results nicely
+#!"""
+# & 3.SHOW EVERYONES POSTS EXCEPT WHOEVER'S LOGGED IN
 def all_exploits():
+    cursor = connect_to_db()
     user_input = user_id
+#^  SELECT content FROM exploits WHERE user_id = user_id_input = FALSE;
     cursor.execute("CALL all_exploits(?)",[user_input])
     results = cursor.fetchall()
     for i in results:
         print(i[0])
 
+
 # & 4.EXIT APPLICATION
 def exit():
     print("__!GOODBYE!__")
+
 
 # & USER OPTIONS
 def user_options():
@@ -75,5 +97,6 @@ def user_options():
             if user_input == 4:
                 exit()
                 break
-            
+
+#! THE FUNCTION THAT'S RUNNING!
 login()

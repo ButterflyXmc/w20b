@@ -2,21 +2,22 @@ import mariadb
 import dbcreds
 
 # * CONNECTING TO THE DB
-# def connect_to_db():
-#     try:
-#         conn = mariadb.connect(
-#                                         user = dbcreds.user,
-#                                         password = dbcreds.password,
-#                                         host = dbcreds.host,
-#                                         port = dbcreds.port,
-#                                         database = dbcreds.database,
-#                                         # autocommit = True
-#             )
-#     except mariadb.OperationalError as error:
-#             print("Operational error!", error)
-#     except Exception as error:
-#             print("Something went wrong!", error)
-#             return None
+def connect_to_db():
+    try:
+        conn = mariadb.connect(
+                                        user = dbcreds.user,
+                                        password = dbcreds.password,
+                                        host = dbcreds.host,
+                                        port = dbcreds.port,
+                                        database = dbcreds.database,
+                                        autocommit = True
+            )
+        cursor = conn.cursor()
+        return cursor
+    except mariadb.OperationalError as error:
+            print("!__!Operational error! Not able to connect to the database!__!", error)
+    except Exception as error:
+            print("!__!Something went wrong!__!", error)
 
 # * Cursor
 def cursor(conn):
